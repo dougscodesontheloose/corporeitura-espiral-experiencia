@@ -1,0 +1,77 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+5. **Role até o final da página**
+
+6. **No campo "Commit message"**, digite:
+```
+   feat: adicionar workflow de deploy
+```
+
+7. Clique no botão verde **"Commit changes"**
+
+---
+
+### **PASSO 3: Criar o arquivo .nojekyll**
+
+8. Novamente, clique em **"Add file" → "Create new file"**
+
+9. **Nome do arquivo:**
+```
+   public/.nojekyll
+```
+
+10. **Deixe o arquivo VAZIO** (não cole nada)
+
+11. **Commit message:**
+```
+    feat: adicionar .nojekyll

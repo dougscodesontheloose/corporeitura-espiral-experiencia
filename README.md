@@ -30,5 +30,3 @@ Este projeto baseia-se na dissertação de Mestrado:
 > "A espiral vai se constituindo a cada nova experiência no instante-já da existência [...] tudo retorna para amadurecer a própria leitura da obra."
 
 📄 **[Acesse o trabalho completo (PDF)](https://repositorio.utfpr.edu.br/jspui/bitstream/1/35137/1/corporeituradancaliteraturaclarice.pdf)**
-
-📄 **[Visualize o modelo 3D](https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221kuvaJLolAUB1-IPi_TPcWGqnd5D9d32g%22%5D,%22action%22:%22open%22,%22userId%22:%22101072693903597140600%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing)**

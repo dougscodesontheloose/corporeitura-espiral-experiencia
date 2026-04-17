@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.npm_cache/
+.DS_Store
+*.log
+.env
+.env.local
+.vite/
+.claude/

@@ -1,5 +1,6 @@
 {
-  "name": "Copy of Corporeitura: Espiral de Experiência",
+  "name": "Corporeitura: Espiral de Experiência (Versão PRINCIPAL)",
   "description": "Uma visualização 3D interativa e didática do conceito de Tempo Espiralar e Corporeitura baseada na obra de Bruna de Paula Moura da Silva, com estética inspirada em águas-vivas e bioluminescência.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

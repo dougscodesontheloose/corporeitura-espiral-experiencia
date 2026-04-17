@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="glow" x1="256" y1="120" x2="256" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7FFFD4" />
+      <stop offset="0.5" stop-color="#40E0D0" />
+      <stop offset="1" stop-color="#B19CD9" />
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" />
+    </filter>
+  </defs>
+  
+  <rect width="512" height="512" rx="128" fill="#0A1628" />
+  
+  <!-- Tentacles -->
+  <g opacity="0.6">
+    <path d="M200 240 Q180 320 210 420" stroke="url(#glow)" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M240 240 Q250 350 230 460" stroke="url(#glow)" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M272 240 Q262 350 282 460" stroke="url(#glow)" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M312 240 Q332 320 302 420" stroke="url(#glow)" stroke-width="12" stroke-linecap="round" fill="none" />
+  </g>
+  
+  <!-- Outer Glow -->
+  <path d="M156 220 C156 164.771 200.771 120 256 120 C311.229 120 356 164.771 356 220 V245 H156 V220Z" fill="url(#glow)" filter="url(#blur)" opacity="0.3" />
+  
+  <!-- Jellyfish Body -->
+  <path d="M156 220 C156 164.771 200.771 120 256 120 C311.229 120 356 164.771 356 220 V245 H156 V220Z" fill="url(#glow)" />
+  
+  <!-- Highlights -->
+  <path d="M190 180 C190 160 220 145 256 145" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.4" />
+</svg>

@@ -12,3 +12,5 @@ export interface InfoSection {
   title: string;
   content: string;
 }
+
+export type VisualMode = 'abissal' | 'raso' | 'claudinho';

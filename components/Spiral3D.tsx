@@ -2,10 +2,10 @@ import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Float, Stars, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
-import { ExperiencePoint } from '../types';
+import { ExperiencePoint, VisualMode } from '../types';
+import { SPIRAL_STAGES } from '../constants';
 
 // Augment JSX namespace to allow Three.js intrinsic elements
-// We include both global and module-scoped augmentations to cover different TS configurations.
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -17,12 +17,12 @@ declare global {
       meshStandardMaterial: any;
       sphereGeometry: any;
       meshBasicMaterial: any;
+      fogExp2: any;
       [elemName: string]: any;
     }
   }
 }
 
-// Support for setups where JSX is namespaced under React
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
@@ -34,6 +34,7 @@ declare module 'react' {
       meshStandardMaterial: any;
       sphereGeometry: any;
       meshBasicMaterial: any;
+      fogExp2: any;
       [elemName: string]: any;
     }
   }
@@ -42,24 +43,56 @@ declare module 'react' {
 interface Spiral3DProps {
   onPointClick: (point: ExperiencePoint) => void;
   zoomLevel: number; // 0 to 100
+  mode: VisualMode;
+  visibleStages: string[];
 }
 
-const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
+const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel, mode, visibleStages }) => {
   const pointsRef = useRef<THREE.Group>(null);
   const spiralRef = useRef<THREE.Mesh>(null);
 
   // Calculate camera distance based on zoom level
-  // 0 (Far) -> distance 40
-  // 100 (Near) -> distance 5
   const targetDistance = useMemo(() => {
     const minDistance = 5;
     const maxDistance = 40;
-    // Linear interpolation: maxDistance -> minDistance
     return maxDistance - (zoomLevel / 100) * (maxDistance - minDistance);
   }, [zoomLevel]);
 
-  // Generate spiral data based on the PDF's concept of "Tempo Espiralar"
-  // Expanding outwards and upwards (accumulating experience)
+  // Theme Configs
+  const theme = useMemo(() => {
+    const configs: Record<VisualMode, any> = {
+      abissal: {
+        fog: "#0a1628",
+        spiralColor: "#7fffd4",
+        spiralEmissive: "#40e0d0",
+        particleColor: "#ffffff",
+        textColor: "white",
+        lights: { ambient: 0.4, point: 1.5 },
+        isDark: true
+      },
+      raso: {
+        fog: "#e0f7fa", 
+        spiralColor: "#5e3aee", 
+        spiralEmissive: "#98d8e8",
+        particleColor: "#0a1628", 
+        textColor: "#0a1628",
+        lights: { ambient: 0.8, point: 1.0 },
+        isDark: false
+      },
+      claudinho: {
+        fog: "#F2F0EB", // Anthropic's signature warm grey
+        spiralColor: "#323232", // Sharp Charcoal
+        spiralEmissive: "#1a1a1a",
+        particleColor: "#D1CFC9", 
+        textColor: "#1A1A1A",
+        lights: { ambient: 0.9, point: 0.8 },
+        isDark: false,
+        outline: "#ffffff"
+      }
+    };
+    return configs[mode];
+  }, [mode]);
+
   const { curve, experiencePoints } = useMemo(() => {
     const points: THREE.Vector3[] = [];
     const expPoints: ExperiencePoint[] = [];
@@ -67,46 +100,37 @@ const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
     const height = 8;
     const radiusMax = 6;
     
-    // Labels derived from the thesis concepts
-    const labels = [
-      { text: "Origem / Ancestralidade", desc: "A base de toda ação. O tempo curvo que retoma e transforma.", color: "#40e0d0" },
-      { text: "Leitura", desc: "O contato inicial com a obra. A percepção ativa.", color: "#98d8e8" },
-      { text: "Prática / O 'It'", desc: "A essência da origem. O movimento do impulso. A vivência corpórea.", color: "#7fffd4" },
-      { text: "Figuração", desc: "O exercício dos sentidos. O 'atrás do pensamento'.", color: "#b19cd9" },
-      { text: "Interconexão", desc: "Curadoria corpórea. Onde a dança e literatura dialogam.", color: "#ffd1dc" },
-      { text: "Corporeitura", desc: "A leitura materializada no corpo. O auge da colaboração.", color: "#ffffff" },
-      { text: "O Instante-Já", desc: "O presente indivisível. A consciência do ser no mundo.", color: "#40e0d0" }
-    ];
-
     for (let i = 0; i <= 100; i++) {
       const t = i / 100;
       const angle = t * loops * Math.PI * 2;
-      const r = (t * radiusMax) + 0.5; // Start with small radius, expand out
-      const y = (t * height) - (height / 2); // Centered vertically
+      const r = (t * radiusMax) + 0.5;
+      const y = (t * height) - (height / 2);
       
       const x = Math.cos(angle) * r;
       const z = Math.sin(angle) * r;
       
       points.push(new THREE.Vector3(x, y, z));
 
-      // Add interactive points at intervals
       if (i % 16 === 0 && i > 0 && i < 95) {
-        const labelIndex = Math.min(Math.floor(i / 15), labels.length - 1);
+        // Map index to SPIRAL_STAGES
+        const labelIndex = Math.min(Math.floor(i / 15), SPIRAL_STAGES.length - 1);
+        const stage = SPIRAL_STAGES[labelIndex];
+        
         expPoints.push({
           id: i,
           x, y, z,
-          label: labels[labelIndex].text,
-          description: labels[labelIndex].desc,
-          color: labels[labelIndex].color
+          label: stage.title,
+          description: stage.desc,
+          color: stage.color
         });
       }
     }
     
     const curve = new THREE.CatmullRomCurve3(points);
-    return { curve, experiencePoints: expPoints };
-  }, []);
+    const filteredExpPoints = expPoints.filter(p => visibleStages.includes(p.label));
+    return { curve, experiencePoints: filteredExpPoints };
+  }, [visibleStages]);
 
-  // Slow gentle rotation for the "floating in ocean" feel
   useFrame((state) => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y = Math.sin(state.clock.getElapsedTime() * 0.1) * 0.1;
@@ -115,35 +139,58 @@ const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
 
   return (
     <>
-      <ambientLight intensity={0.4} color="#0a1628" />
-      <pointLight position={[10, 10, 10]} intensity={1.5} color="#40e0d0" />
-      <pointLight position={[-10, -10, -5]} intensity={0.8} color="#b19cd9" />
+      {/* Fog creates the depth effect */}
+      <fogExp2 attach="fog" args={[theme.fog, 0.02]} />
+
+      <ambientLight intensity={theme.lights.ambient} color={theme.isDark ? "#0a1628" : "#ffffff"} />
+      <pointLight position={[10, 10, 10]} intensity={theme.lights.point} color={mode === 'abissal' ? "#40e0d0" : "#5e3aee"} />
+      <pointLight position={[-10, -10, -5]} intensity={theme.lights.point * 0.6} color="#b19cd9" />
+      
       <group ref={pointsRef}>
-        {/* The Spiral Line (Tube) - "Bioluminescent" */}
+        {/* The Spiral Line */}
         <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
           <mesh ref={spiralRef}>
             <tubeGeometry args={[curve, 128, 0.08, 8, false]} />
             <meshStandardMaterial 
-              color="#7fffd4" 
-              emissive="#40e0d0"
-              emissiveIntensity={0.6}
+              color={theme.spiralColor}
+              emissive={theme.spiralEmissive}
+              emissiveIntensity={theme.isDark ? 0.6 : 0.2}
               transparent 
-              opacity={0.7}
-              roughness={0.2}
-              metalness={0.8}
+              opacity={mode === 'claudinho' ? 0.4 : 0.7}
+              roughness={mode === 'claudinho' ? 0.8 : 0.2}
+              metalness={mode === 'claudinho' ? 0.1 : 0.8}
             />
           </mesh>
         </Float>
 
-        {/* Particles / Floating bits ("Estofo do mundo") */}
-        <Stars radius={15} depth={10} count={1000} factor={3} saturation={0} fade speed={1} />
+        {/* Particles */}
+        {mode === 'abissal' ? (
+           <Stars radius={15} depth={10} count={1000} factor={3} saturation={0} fade speed={1} />
+        ) : (
+           <group>
+             {Array.from({ length: mode === 'claudinho' ? 50 : 100 }).map((_, i) => (
+               <mesh key={i} position={[
+                 (Math.random() - 0.5) * 30,
+                 (Math.random() - 0.5) * 30,
+                 (Math.random() - 0.5) * 30
+               ]}>
+                 <sphereGeometry args={[mode === 'claudinho' ? 0.015 : 0.03, 4, 4]} />
+                 <meshBasicMaterial 
+                   color={theme.particleColor} 
+                   transparent 
+                   opacity={mode === 'claudinho' ? 0.2 : 0.3} 
+                 />
+               </mesh>
+             ))}
+           </group>
+        )}
 
-        {/* Experience Points (Interactive Nodes) */}
+        {/* Experience Points */}
         {experiencePoints.map((point) => (
           <group key={point.id} position={[point.x, point.y, point.z]}>
             <Float speed={2} rotationIntensity={0.5} floatIntensity={0.2}>
               <mesh 
-                onClick={(e) => { e.stopPropagation(); onPointClick(point); }}
+                onClick={(e: any) => { e.stopPropagation(); onPointClick(point); }}
                 onPointerOver={() => document.body.style.cursor = 'pointer'}
                 onPointerOut={() => document.body.style.cursor = 'default'}
               >
@@ -155,13 +202,13 @@ const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
                   toneMapped={false}
                 />
               </mesh>
-              {/* Halo Glow */}
+              {/* Halo Glow - Adjust blend mode or opacity for light mode if needed */}
               <mesh scale={[1.5, 1.5, 1.5]}>
                 <sphereGeometry args={[0.2, 16, 16]} />
                 <meshBasicMaterial color={point.color} transparent opacity={0.2} />
               </mesh>
             </Float>
-            {/* Label floating above - Wrapped in Billboard to face camera */}
+            
             <Billboard
               position={[0, 0.4, 0]}
               follow={true}
@@ -171,10 +218,12 @@ const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
             >
               <Text
                 fontSize={0.25}
-                color="white"
+                color={theme.textColor} // Text color adapts to theme
                 anchorX="center"
                 anchorY="middle"
-                font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+                font="/fonts/inter-label.woff"
+                outlineWidth={theme.isDark ? 0 : 0.02} // Outline in light modes for readability
+                outlineColor={theme.outline || "white"}
               >
                 {point.label}
               </Text>
@@ -183,11 +232,6 @@ const Spiral3D: React.FC<Spiral3DProps> = ({ onPointClick, zoomLevel }) => {
         ))}
       </group>
 
-      {/* 
-        Camera Controls 
-        By setting minDistance and maxDistance to the same value (targetDistance),
-        we lock the zoom to the slider value while still permitting rotation.
-      */}
       <OrbitControls 
         makeDefault 
         enableZoom={true} 

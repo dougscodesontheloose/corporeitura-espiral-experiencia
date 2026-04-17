@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/inter-300.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-400.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-600.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/playfair-italic-400.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/playfair-600.ttf') format('truetype');
+}
+
+@layer base {
+  body {
+    @apply m-0 overflow-hidden bg-ocean-deep font-sans;
+  }
+}
+
+/* Custom scrollbar for glass panels */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+::-webkit-scrollbar-thumb { background: rgba(64, 224, 208, 0.3); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(64, 224, 208, 0.6); }
+
+/* Custom Range Slider Styling */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #ffd1dc, #40e0d0);
+  cursor: pointer;
+  margin-top: -8px;
+  box-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+input[type=range]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #ffd1dc, #40e0d0);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: rgba(152, 216, 232, 0.3);
+  border-radius: 2px;
+}
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: rgba(152, 216, 232, 0.3);
+  border-radius: 2px;
+}
